@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fitness Coach Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .chat-container {
+            width: 100%;
+            height: 100vh;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            text-align: center;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .chat-content {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #eaecef;
+        }
+        .chat-content div {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .user-message {
+            background-color: #28a745;
+            color: white;
+            align-self: flex-end;
+            max-width: 100%;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+            color: black;
+            align-self: flex-start;
+            max-width: 100%;
+        }
+        .prompt-message {
+            font-size: 14px;
+            color: #555;
+            padding: 5px 10px;
+            background-color: #fff4cc;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .loading {
+            color: #28a745;
+            font-style: italic;
+            font-size: 14px;
+            align-self: flex-start;
+        }
+        .chat-form {
+            display: flex;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #ddd;
+        }
+        .chat-form input {
+            flex-grow: 1;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+        }
+        .chat-form button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chat-form button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Header Section -->
+        <div class="header">FITNESS COACH </div>
+        <!-- Chat Content -->
+        <div id="chat-content" class="chat-content">
+            <div class="prompt-message">💡 Tips: Ask about workout routines, diet plans, or specific fitness goals like weight loss or muscle gain.</div>
+        </div>
+        <!-- Chat Form -->
+        <form id="chat-form" class="chat-form">
+            <input type="text" id="user-input" placeholder="Ask your fitness question..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatContent = document.getElementById("chat-content");
+        const chatForm = document.getElementById("chat-form");
+        const userInput = document.getElementById("user-input");
+
+        // Function to display bot messages
+        function displayBotMessage(message) {
+            const botMessageElement = document.createElement("div");
+            botMessageElement.textContent = message;
+            botMessageElement.classList.add("bot-message");
+            chatContent.appendChild(botMessageElement);
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        // Function to display loading indicator
+        function showLoading() {
+            const loadingElement = document.createElement("div");
+            loadingElement.textContent = "Your Fitness Coach is thinking...";
+            loadingElement.id = "loading";
+            loadingElement.classList.add("loading");
+            chatContent.appendChild(loadingElement);
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        // Function to hide loading indicator
+        function hideLoading() {
+            const loadingElement = document.getElementById("loading");
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+
+        // Initialize with a welcome message
+        window.onload = () => {
+            displayBotMessage("Welcome! I am your AI Fitness Coach. How can I assist you in your fitness journey?");
+        };
+
+        async function fetchResponse(userMessage) {
+            const assistantDetails = "You are a knowledgeable AI fitness coach. Respond to questions about workouts, fitness routines, diet plans, weight loss, muscle gain, and overall health tips.";
+
+            try {
+                const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        prompt: `${assistantDetails}\nUser: ${userMessage}\nAI:`
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+
+                const data = await response.json();
+                return { text: data.text || "Error: Unable to process your request at this time." };
+            } catch (error) {
+                console.error("Error:", error);
+                return { text: "Error: Please try again later." };
+            }
+        }
+
+        chatForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const userMessage = userInput.value.trim();
+            if (!userMessage) return;
+
+            // Display user message
+            const userMessageElement = document.createElement("div");
+            userMessageElement.textContent = userMessage;
+            userMessageElement.classList.add("user-message");
+            chatContent.appendChild(userMessageElement);
+
+            userInput.value = ""; // Clear input field
+
+            // Show loading indicator
+            showLoading();
+
+            // Fetch and display bot response
+            const botResponse = await fetchResponse(userMessage);
+
+            // Hide loading indicator
+            hideLoading();
+
+            displayBotMessage(botResponse.text);
+        });
+    </script>
+</body>
+</html>
