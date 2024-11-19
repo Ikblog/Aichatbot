@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Story Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .chat-container {
+            width: 100%;
+            height: 100vh;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            text-align: center;
+            padding: 10px;
+            background-color: #6a1b9a;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .chat-content {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #eaecef;
+        }
+        .chat-content div {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .user-message {
+            background-color: #6a1b9a;
+            color: white;
+            align-self: flex-end;
+            max-width: 100%;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+            color: black;
+            align-self: flex-start;
+            max-width: 100%;
+            white-space: pre-line;
+        }
+        .prompt-message {
+            font-size: 14px;
+            color: #555;
+            padding: 5px 10px;
+            background-color: #fff4cc;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .loading {
+            color: #6a1b9a;
+            font-style: italic;
+            font-size: 14px;
+            align-self: flex-start;
+        }
+        .chat-form {
+            display: flex;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #ddd;
+        }
+        .chat-form input {
+            flex-grow: 1;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+        }
+        .chat-form button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            border: none;
+            background-color: #6a1b9a;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chat-form button:hover {
+            background-color: #5e1785;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">BIBLE STORY CHATBOT</div>
+        <div id="chat-content" class="chat-content">
+            <div class="prompt-message">💡 Tips: Ask for a Bible story, such as the story of David and Goliath, Moses and the Red Sea, or a parable of Jesus. Start with "Tell me a Bible story about..."</div>
+        </div>
+        <form id="chat-form" class="chat-form">
+            <input type="text" id="user-input" placeholder="Ask for a Bible story..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatContent = document.getElementById("chat-content");
+        const chatForm = document.getElementById("chat-form");
+        const userInput = document.getElementById("user-input");
+        let conversationHistory = "";
+
+        // Display bot message
+        function displayBotMessage(message) {
+            const botMessageElement = document.createElement("div");
+            botMessageElement.textContent = message;
+            botMessageElement.classList.add("bot-message");
+            chatContent.appendChild(botMessageElement);
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        // Display loading indicator
+        function showLoading() {
+            const loadingElement = document.createElement("div");
+            loadingElement.textContent = "Your storyteller is crafting...";
+            loadingElement.id = "loading";
+            loadingElement.classList.add("loading");
+            chatContent.appendChild(loadingElement);
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        // Hide loading indicator
+        function hideLoading() {
+            const loadingElement = document.getElementById("loading");
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+
+        // Add bot welcome message on page load
+        window.onload = () => {
+            displayBotMessage("Welcome! I’m your Bible Storyteller. Ask me for any story from the Bible!");
+        };
+
+        // Format response text into paragraphs
+        function formatText(text) {
+            const paragraphs = text.split("\n\n").map(paragraph => paragraph.trim());
+            return paragraphs.join("\n\n");
+        }
+
+        // Fetch response from the API
+        async function fetchResponse(userMessage) {
+            const storytellingDetails = "You are a knowledgeable AI that specializes in telling Bible stories. Respond with vivid and structured narratives from the Bible, covering well-known events, characters, and parables. Your responses should be faithful to biblical texts and offer spiritual insights. Avoid topics unrelated to the Bible.";
+            
+            // Append user message to conversation history
+            conversationHistory += `User: ${userMessage}\n`;
+
+            try {
+                const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        prompt: `${storytellingDetails}\n${conversationHistory}AI:`
+                    })
+                });
+
+                if (!response.ok) {
+                    console.error("Network response was not ok:", response.statusText);
+                    throw new Error("Failed to fetch response from the server.");
+                }
+
+                const data = await response.json();
+
+                if (!data.text) {
+                    throw new Error("Invalid response from the API.");
+                }
+
+                // Update conversation history
+                conversationHistory += `AI: ${data.text}\n`;
+
+                return { text: formatText(data.text) };
+            } catch (error) {
+                console.error("Error fetching response:", error);
+                return { text: "Oops! Something went wrong. Please try again later." };
+            }
+        }
+
+        // Event listener for the chat form
+        chatForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const userMessage = userInput.value.trim();
+            if (!userMessage) return;
+
+            // Display user message
+            const userMessageElement = document.createElement("div");
+            userMessageElement.textContent = userMessage;
+            userMessageElement.classList.add("user-message");
+            chatContent.appendChild(userMessageElement);
+
+            // Clear input field and disable it
+            userInput.value = "";
+            userInput.disabled = true;
+
+            // Show loading indicator
+            showLoading();
+
+            // Fetch bot response
+            const botResponse = await fetchResponse(userMessage);
+
+            // Hide loading indicator and re-enable input field
+            hideLoading();
+            userInput.disabled = false;
+
+            // Display bot response
+            displayBotMessage(botResponse.text);
+        });
+    </script>
+</body>
+</html>
