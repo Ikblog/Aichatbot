@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Study Buddy Chatbot</title>
     <style>
+        /* CSS styles remain unchanged */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -129,6 +130,9 @@
             });
             chatContent.appendChild(botMessageElement);
             chatContent.scrollTop = chatContent.scrollHeight;
+
+            // Trigger text-to-speech
+            speakText(message);
         }
 
         function showLoading() {
@@ -170,6 +174,13 @@
                 console.error(error);
                 return { text: "An error occurred. Please try again later." };
             }
+        }
+
+        // Text-to-Speech Function
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // You can set other languages like 'en-GB', 'es-ES', etc.
+            speechSynthesis.speak(utterance);
         }
 
         chatForm.addEventListener("submit", async (event) => {
