@@ -99,13 +99,10 @@
 </head>
 <body>
     <div class="chat-container">
-        <!-- Header Section -->
-        <div class="header">FITNESS COACH </div>
-        <!-- Chat Content -->
+        <div class="header">FITNESS COACH</div>
         <div id="chat-content" class="chat-content">
             <div class="prompt-message">💡 Tips: Ask about workout routines, diet plans, or specific fitness goals like weight loss or muscle gain.</div>
         </div>
-        <!-- Chat Form -->
         <form id="chat-form" class="chat-form">
             <input type="text" id="user-input" placeholder="Ask your fitness question..." autocomplete="off">
             <button type="submit">Send</button>
@@ -117,16 +114,26 @@
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
 
-        // Function to display bot messages
+        function textToSpeech(message) {
+            const speech = new SpeechSynthesisUtterance(message);
+            speech.lang = "en-US";
+            speech.pitch = 1;
+            speech.rate = 1;
+            speech.volume = 1;
+            window.speechSynthesis.speak(speech);
+        }
+
         function displayBotMessage(message) {
             const botMessageElement = document.createElement("div");
             botMessageElement.textContent = message;
             botMessageElement.classList.add("bot-message");
             chatContent.appendChild(botMessageElement);
             chatContent.scrollTop = chatContent.scrollHeight;
+
+            // Trigger text-to-speech
+            textToSpeech(message);
         }
 
-        // Function to display loading indicator
         function showLoading() {
             const loadingElement = document.createElement("div");
             loadingElement.textContent = "Your Fitness Coach is thinking...";
@@ -136,7 +143,6 @@
             chatContent.scrollTop = chatContent.scrollHeight;
         }
 
-        // Function to hide loading indicator
         function hideLoading() {
             const loadingElement = document.getElementById("loading");
             if (loadingElement) {
@@ -144,7 +150,6 @@
             }
         }
 
-        // Initialize with a welcome message
         window.onload = () => {
             displayBotMessage("Welcome! I am your AI Fitness Coach. How can I assist you in your fitness journey?");
         };
@@ -181,21 +186,17 @@
             const userMessage = userInput.value.trim();
             if (!userMessage) return;
 
-            // Display user message
             const userMessageElement = document.createElement("div");
             userMessageElement.textContent = userMessage;
             userMessageElement.classList.add("user-message");
             chatContent.appendChild(userMessageElement);
 
-            userInput.value = ""; // Clear input field
+            userInput.value = "";
 
-            // Show loading indicator
             showLoading();
 
-            // Fetch and display bot response
             const botResponse = await fetchResponse(userMessage);
 
-            // Hide loading indicator
             hideLoading();
 
             displayBotMessage(botResponse.text);
