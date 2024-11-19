@@ -122,6 +122,13 @@
             botMessageElement.classList.add("bot-message");
             chatContent.appendChild(botMessageElement);
             chatContent.scrollTo({ top: chatContent.scrollHeight, behavior: "smooth" });
+            speakText(message);
+        }
+
+        function speakText(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = "en-US";
+            speechSynthesis.speak(speech);
         }
 
         function showLoading() {
@@ -191,5 +198,4 @@
         });
     </script>
 </body>
-                </html>
-                
+</html>
