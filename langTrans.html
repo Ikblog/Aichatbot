@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Language Translator Chatbot</title>
     <style>
+        /* CSS remains the same as your original code */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -99,13 +100,10 @@
 </head>
 <body>
     <div class="chat-container">
-        <!-- Header Section -->
         <div class="header">LANGUAGE TRANSLATOR CHATBOT</div>
-        <!-- Chat Content -->
         <div id="chat-content" class="chat-content">
             <div class="prompt-message">💡 Tips: Ask me to translate phrases between languages. For example: "Translate 'hello' to French" or "How do you say 'good morning' in Spanish?"</div>
         </div>
-        <!-- Chat Form -->
         <form id="chat-form" class="chat-form">
             <input type="text" id="user-input" placeholder="Type a phrase to translate..." autocomplete="off">
             <button type="submit">Send</button>
@@ -117,7 +115,6 @@
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
 
-        // Function to display bot messages
         function displayBotMessage(message) {
             const botMessageElement = document.createElement("div");
             botMessageElement.textContent = message;
@@ -126,7 +123,6 @@
             chatContent.scrollTop = chatContent.scrollHeight;
         }
 
-        // Function to display loading indicator
         function showLoading() {
             const loadingElement = document.createElement("div");
             loadingElement.textContent = "Thinking...";
@@ -136,7 +132,6 @@
             chatContent.scrollTop = chatContent.scrollHeight;
         }
 
-        // Function to hide loading indicator
         function hideLoading() {
             const loadingElement = document.getElementById("loading");
             if (loadingElement) {
@@ -144,7 +139,6 @@
             }
         }
 
-        // Initialize with a welcome message
         window.onload = () => {
             displayBotMessage("Welcome! I can help you translate phrases between different languages. Ask me something to get started!");
         };
@@ -181,21 +175,17 @@
             const userMessage = userInput.value.trim();
             if (!userMessage) return;
 
-            // Display user message
             const userMessageElement = document.createElement("div");
             userMessageElement.textContent = userMessage;
             userMessageElement.classList.add("user-message");
             chatContent.appendChild(userMessageElement);
 
-            userInput.value = ""; // Clear input field
+            userInput.value = ""; 
 
-            // Show loading indicator
             showLoading();
 
-            // Fetch and display bot response
             const botResponse = await fetchResponse(userMessage);
 
-            // Hide loading indicator
             hideLoading();
 
             displayBotMessage(botResponse.text);
@@ -203,3 +193,4 @@
     </script>
 </body>
 </html>
+    
