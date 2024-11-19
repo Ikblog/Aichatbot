@@ -97,8 +97,6 @@
         .chat-form button:hover {
             background-color: #5e1785;
         }
-        
-        
     </style>
 </head>
 <body>
@@ -119,13 +117,23 @@
         const userInput = document.getElementById("user-input");
         let conversationHistory = "";
 
-        // Display bot message
+        // Text-to-Speech function
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // Set language
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Display bot message with TTS
         function displayBotMessage(message) {
             const botMessageElement = document.createElement("div");
             botMessageElement.textContent = message;
             botMessageElement.classList.add("bot-message");
             chatContent.appendChild(botMessageElement);
             chatContent.scrollTop = chatContent.scrollHeight;
+
+            // Use Text-to-Speech
+            speak(message);
         }
 
         // Display loading indicator
@@ -161,7 +169,6 @@
         async function fetchResponse(userMessage) {
             const storytellingDetails = "You are a creative AI storyteller. Respond with vivid and structured stories containing multiple paragraphs for better readability. Each story should focus on adventures, mysteries, fairy tales, or custom user prompts.";
             
-            // Append user message to conversation history
             conversationHistory += `User: ${userMessage}\n`;
 
             try {
@@ -186,7 +193,6 @@
                     throw new Error("Invalid response from the API.");
                 }
 
-                // Update conversation history
                 conversationHistory += `AI: ${data.text}\n`;
 
                 return { text: formatText(data.text) };
@@ -203,30 +209,23 @@
             const userMessage = userInput.value.trim();
             if (!userMessage) return;
 
-            // Display user message
             const userMessageElement = document.createElement("div");
             userMessageElement.textContent = userMessage;
             userMessageElement.classList.add("user-message");
             chatContent.appendChild(userMessageElement);
 
-            // Clear input field and disable it
             userInput.value = "";
             userInput.disabled = true;
 
-            // Show loading indicator
             showLoading();
 
-            // Fetch bot response
             const botResponse = await fetchResponse(userMessage);
 
-            // Hide loading indicator and re-enable input field
             hideLoading();
             userInput.disabled = false;
 
-            // Display bot response
             displayBotMessage(botResponse.text);
         });
     </script>
 </body>
-    </html>
-    
+</html>
