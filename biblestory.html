@@ -116,13 +116,23 @@
         const userInput = document.getElementById("user-input");
         let conversationHistory = "";
 
-        // Display bot message
+        // Text-to-Speech function
+        function textToSpeech(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // Adjust language if necessary
+            speechSynthesis.speak(utterance);
+        }
+
+        // Display bot message with text-to-speech
         function displayBotMessage(message) {
             const botMessageElement = document.createElement("div");
             botMessageElement.textContent = message;
             botMessageElement.classList.add("bot-message");
             chatContent.appendChild(botMessageElement);
             chatContent.scrollTop = chatContent.scrollHeight;
+
+            // Trigger text-to-speech for the bot message
+            textToSpeech(message);
         }
 
         // Display loading indicator
