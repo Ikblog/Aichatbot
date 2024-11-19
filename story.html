@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Storyteller Chatbot</title>
     <style>
+        /* (Same CSS as provided in the initial code) */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -79,7 +80,7 @@
         }
         .chat-form input {
             flex-grow: 1;
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             outline: none;
@@ -96,17 +97,16 @@
         .chat-form button:hover {
             background-color: #5e1785;
         }
+        
+        
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <!-- Header Section -->
-        <div class="header">AI STORYTELLER CHATBOT</div>
-        <!-- Chat Content -->
+        <div class="header">STORYTELLER CHATBOT</div>
         <div id="chat-content" class="chat-content">
             <div class="prompt-message">💡 Tips: Ask for a story about a brave hero, a mysterious adventure, or create your own custom tale. Start with "Tell me a story about..."</div>
         </div>
-        <!-- Chat Form -->
         <form id="chat-form" class="chat-form">
             <input type="text" id="user-input" placeholder="Ask for a story..." autocomplete="off">
             <button type="submit">Send</button>
@@ -117,8 +117,9 @@
         const chatContent = document.getElementById("chat-content");
         const chatForm = document.getElementById("chat-form");
         const userInput = document.getElementById("user-input");
+        let conversationHistory = "";
 
-        // Function to display bot messages
+        // Display bot message
         function displayBotMessage(message) {
             const botMessageElement = document.createElement("div");
             botMessageElement.textContent = message;
@@ -127,17 +128,17 @@
             chatContent.scrollTop = chatContent.scrollHeight;
         }
 
-        // Function to display loading indicator
+        // Display loading indicator
         function showLoading() {
             const loadingElement = document.createElement("div");
-            loadingElement.textContent = "Your storyteller is crafting a tale...";
+            loadingElement.textContent = "Your storyteller is crafting...";
             loadingElement.id = "loading";
             loadingElement.classList.add("loading");
             chatContent.appendChild(loadingElement);
             chatContent.scrollTop = chatContent.scrollHeight;
         }
 
-        // Function to hide loading indicator
+        // Hide loading indicator
         function hideLoading() {
             const loadingElement = document.getElementById("loading");
             if (loadingElement) {
@@ -145,13 +146,23 @@
             }
         }
 
-        // Initialize with a welcome message
+        // Add bot welcome message on page load
         window.onload = () => {
             displayBotMessage("Welcome! I’m your AI Storyteller. Ask me for an adventurous, magical, or heartwarming story!");
         };
 
+        // Format response text into paragraphs
+        function formatText(text) {
+            const paragraphs = text.split("\n\n").map(paragraph => paragraph.trim());
+            return paragraphs.join("\n\n");
+        }
+
+        // Fetch response from the API
         async function fetchResponse(userMessage) {
             const storytellingDetails = "You are a creative AI storyteller. Respond with vivid and structured stories containing multiple paragraphs for better readability. Each story should focus on adventures, mysteries, fairy tales, or custom user prompts.";
+            
+            // Append user message to conversation history
+            conversationHistory += `User: ${userMessage}\n`;
 
             try {
                 const response = await fetch("https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5IZkJDMlNyYUVUTjIyZVN3UWFNX3BFTU85SWpCM2NUMUk3T2dxejhLSzBhNWNMMXNzZlp3c09BSTR6YW1Sc1BmdGNTVk1GY0liT1RoWDZZX1lNZlZ0Z1dqd3c9PQ==", {
@@ -160,27 +171,32 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        prompt: `${storytellingDetails}\nUser: ${userMessage}\nAI:`
+                        prompt: `${storytellingDetails}\n${conversationHistory}AI:`
                     })
                 });
 
                 if (!response.ok) {
-                    throw new Error("Network response was not ok");
+                    console.error("Network response was not ok:", response.statusText);
+                    throw new Error("Failed to fetch response from the server.");
                 }
 
                 const data = await response.json();
-                return { text: formatText(data.text || "Error: Unable to process your request at this time.") };
+
+                if (!data.text) {
+                    throw new Error("Invalid response from the API.");
+                }
+
+                // Update conversation history
+                conversationHistory += `AI: ${data.text}\n`;
+
+                return { text: formatText(data.text) };
             } catch (error) {
-                console.error("Error:", error);
-                return { text: "Error: Please try again later." };
+                console.error("Error fetching response:", error);
+                return { text: "Oops! Something went wrong. Please try again later." };
             }
         }
 
-        function formatText(text) {
-            const paragraphs = text.split("\n\n").map(paragraph => paragraph.trim());
-            return paragraphs.join("\n\n");
-        }
-
+        // Event listener for the chat form
         chatForm.addEventListener("submit", async (event) => {
             event.preventDefault();
 
@@ -193,19 +209,24 @@
             userMessageElement.classList.add("user-message");
             chatContent.appendChild(userMessageElement);
 
-            userInput.value = ""; // Clear input field
+            // Clear input field and disable it
+            userInput.value = "";
+            userInput.disabled = true;
 
             // Show loading indicator
             showLoading();
 
-            // Fetch and display bot response
+            // Fetch bot response
             const botResponse = await fetchResponse(userMessage);
 
-            // Hide loading indicator
+            // Hide loading indicator and re-enable input field
             hideLoading();
+            userInput.disabled = false;
 
+            // Display bot response
             displayBotMessage(botResponse.text);
         });
     </script>
 </body>
-</html>
+    </html>
+    
