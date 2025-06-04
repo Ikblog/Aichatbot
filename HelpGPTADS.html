@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Screen Scrollable Card</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .card-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        .scroll-container {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            position: relative;
+        }
+
+        .image-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 300vw; /* 3 images × 100vw */
+        }
+
+        .image-item {
+            width: 100vw;
+            height: 100vh;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            padding: 40px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .image-overlay h3 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .image-overlay p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .image-item:hover .image-overlay {
+            transform: translateY(0);
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #333;
+            transition: all 0.3s ease;
+            z-index: 10;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-button:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-button:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .nav-button.left {
+            left: 30px;
+        }
+
+        .nav-button.right {
+            right: 30px;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: translateY(-50%) scale(1);
+        }
+
+        .nav-button:disabled:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-50%) scale(1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-dots {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: white;
+            transform: scale(1.3);
+        }
+
+        /* Mobile touch enhancements */
+        @media (max-width: 768px) {
+            .scroll-container {
+                overflow-x: scroll;
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .scroll-container::-webkit-scrollbar {
+                display: none;
+            }
+
+            .nav-button {
+                display: none;
+            }
+
+            .image-overlay {
+                padding: 20px;
+            }
+
+            .image-overlay h3 {
+                font-size: 1.8rem;
+            }
+
+            .image-overlay p {
+                font-size: 1rem;
+            }
+
+            .progress-dots {
+                bottom: 20px;
+            }
+        }
+
+        /* Smooth scrolling for desktop */
+        @media (min-width: 769px) {
+            .scroll-container {
+                overflow: hidden;
+            }
+        }
+
+        /* Ensure full screen on all devices */
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="scroll-container" id="scrollContainer">
+            <div class="image-track" id="imageTrack">
+                <div class="image-item">
+                    <img src="https://ikskills.com.ng/wp-content/uploads/2025/05/WE-LEARN-1024x1024.png" alt="Mountain landscape">
+                    <div class="image-overlay">
+                        <h3>Mountain Vista</h3>
+                        <p>Breathtaking peaks and endless horizons</p>
+                    </div>
+                </div>
+                <!--<div class="image-item">-->
+                <!--    <img src="https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=1920&h=1080&fit=crop&crop=center" alt="Lake reflection">-->
+                <!--    <div class="image-overlay">-->
+                <!--        <h3>Serene Lake</h3>-->
+                <!--        <p>Perfect reflection in crystal clear waters</p>-->
+                <!--    </div>-->
+                <!--</div>-->
+                <!--<div class="image-item">-->
+                <!--    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&crop=center" alt="Forest path">-->
+                <!--    <div class="image-overlay">-->
+                <!--        <h3>Forest Trail</h3>-->
+                <!--        <p>Nature's pathway through ancient woods</p>-->
+                <!--    </div>-->
+                <!--</div>-->
+            </div>
+        </div>
+
+        <button class="nav-button left" id="prevBtn">‹</button>
+        <button class="nav-button right" id="nextBtn">›</button>
+
+        <div class="progress-dots">
+            <div class="dot active" data-index="0"></div>
+            <div class="dot" data-index="1"></div>
+            <div class="dot" data-index="2"></div>
+        </div>
+    </div>
+
+    <script>
+        class ScrollableCard {
+            constructor() {
+                this.currentIndex = 0;
+                this.totalImages = 3;
+                this.imageWidth = window.innerWidth;
+                
+                this.imageTrack = document.getElementById('imageTrack');
+                this.prevBtn = document.getElementById('prevBtn');
+                this.nextBtn = document.getElementById('nextBtn');
+                this.scrollContainer = document.getElementById('scrollContainer');
+                this.dots = document.querySelectorAll('.dot');
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.updateNavigation();
+                this.setupTouchSupport();
+                this.setupResizeHandler();
+            }
+
+            setupResizeHandler() {
+                window.addEventListener('resize', () => {
+                    this.imageWidth = window.innerWidth;
+                    this.updatePosition();
+                });
+            }
+
+            setupEventListeners() {
+                this.prevBtn.addEventListener('click', () => this.goToPrevious());
+                this.nextBtn.addEventListener('click', () => this.goToNext());
+                
+                this.dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => this.goToIndex(index));
+                });
+
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') this.goToPrevious();
+                    if (e.key === 'ArrowRight') this.goToNext();
+                });
+            }
+
+            setupTouchSupport() {
+                let startX = 0;
+                let startY = 0;
+                let isDragging = false;
+
+                this.scrollContainer.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    isDragging = true;
+                }, { passive: true });
+
+                this.scrollContainer.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    
+                    const currentX = e.touches[0].clientX;
+                    const currentY = e.touches[0].clientY;
+                    const diffX = startX - currentX;
+                    const diffY = startY - currentY;
+
+                    // Prevent vertical scrolling if horizontal swipe is detected
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                this.scrollContainer.addEventListener('touchend', (e) => {
+                    if (!isDragging) return;
+                    
+                    const endX = e.changedTouches[0].clientX;
+                    const diffX = startX - endX;
+                    const threshold = 50;
+
+                    if (Math.abs(diffX) > threshold) {
+                        if (diffX > 0) {
+                            this.goToNext();
+                        } else {
+                            this.goToPrevious();
+                        }
+                    }
+                    
+                    isDragging = false;
+                }, { passive: true });
+            }
+
+            goToIndex(index) {
+                if (index >= 0 && index < this.totalImages) {
+                    this.currentIndex = index;
+                    this.updatePosition();
+                    this.updateNavigation();
+                }
+            }
+
+            goToNext() {
+                if (this.currentIndex < this.totalImages - 1) {
+                    this.currentIndex++;
+                    this.updatePosition();
+                    this.updateNavigation();
+                }
+            }
+
+            goToPrevious() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.updatePosition();
+                    this.updateNavigation();
+                }
+            }
+
+            updatePosition() {
+                const translateX = -this.currentIndex * this.imageWidth;
+                this.imageTrack.style.transform = `translateX(${translateX}px)`;
+            }
+
+            updateNavigation() {
+                // Update buttons
+                this.prevBtn.disabled = this.currentIndex === 0;
+                this.nextBtn.disabled = this.currentIndex === this.totalImages - 1;
+
+                // Update dots
+                this.dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentIndex);
+                });
+            }
+        }
+
+        // Initialize the scrollable card when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.scrollableCard = new ScrollableCard();
+        });
+
+        // Auto-scroll functionality (optional)
+        let autoScrollInterval;
+        
+        function startAutoScroll() {
+            autoScrollInterval = setInterval(() => {
+                const card = window.scrollableCard;
+                if (card.currentIndex === card.totalImages - 1) {
+                    card.goToIndex(0);
+                } else {
+                    card.goToNext();
+                }
+            }, 5000);
+        }
+
+        function stopAutoScroll() {
+            clearInterval(autoScrollInterval);
+        }
+
+        // Start auto-scroll after 3 seconds
+        setTimeout(startAutoScroll, 3000);
+
+        // Stop auto-scroll when user interacts
+        document.addEventListener('click', stopAutoScroll);
+        document.addEventListener('touchstart', stopAutoScroll);
+        document.addEventListener('keydown', stopAutoScroll);
+    </script>
+</body>
+</html>
